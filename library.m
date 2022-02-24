@@ -186,6 +186,46 @@ Identify := function(n,d,k,v,h,Q)
  return X meet H,H,mon2,mon1,Matflat;
 end function;
 
+
+// IdentifyParam
+// INPUT: three sequences n,d,k of the same length m, 
+// a sequence v with the coefficients of the tensor T,
+// a positive integer h (the tensor rank), a field Q
+// OUTPUT: it has 2 outputs: 
+// 1) the subscheme of A^n_1 x ... x A^n_m x A^(h-1) 
+// corresponding to the h-points representing the linear forms 
+// which identify T;
+// 2) a general point in the image of the parametrization
+
+IdentifyParam := function(n,d,v,k,h,Q)
+ A<[z]> := &*[&*[AffineSpace(Q,u) : u in n] : i in [1..h]]*AffineSpace(Q,h-1);
+ M,mon2,mon1,mon := Flattening(n,d,k,Q);
+ r := Rank(Parent(mon2[1]));
+ nr := Nrows(M);
+ nc := Ncols(M);
+ Matflat := Matrix(nr,nc,[Evaluate(Numerator(p),v) : p in Eltseq(M)]);
+ K := Kernel(Transpose(Matflat));
+ lis := [];
+ for i in [1..h] do
+  u := [];
+  for j in [1..#n] do
+   s := &+n[1..j]-n[j]+(i-1)*&+n;
+   u := u cat z[1+s..n[j]+s] cat [1];
+  end for;
+  Append(~lis,Vector([Evaluate(m,u) : m in mon2]));
+ end for;
+ ve := [Exponents(m) : m in mon2];
+ cf := [Factorial(&+u)/&*[Factorial(u[j]) : j in [1..#u]] : u in ve];
+ if h eq 1
+  then w := lis[1];
+  else
+   w := &+[z[&+n*h+i-1]*(lis[i]-lis[1]) : i in [2..#lis]]+lis[1];
+ end if;
+ equ := [&+[cf[i]*w[i]*Eltseq(p)[i] : i in [1..#mon2]] : p in Basis(K)];
+ return Scheme(A,equ),w;
+end function;
+
+
 // IsIdentifiable
 // INPUT: three sequences n,d,k of the same length m, 
 // a sequence v with the coefficients of the tensor T,
