@@ -268,9 +268,20 @@ IdentifyForms := function(n,d,k,v,h,Q)
    forms := forms join {&+[Pn.i*w[i] : i in [1..#w]]};
   end if;
  until #forms eq h;
+ if #n eq 1 and k[1] gt 1 then
+  r := &+n+#n;
+  P<[z]> := ProjectiveSpace(Q,r-1);
+  u:=1;
+  for j in [1..#n] do
+   s := &+n[1..j]-n[j]+j-1;
+   u := u*((&+z[1+s..n[j]+1+s])^k[j]);
+  end for;
+  ver := map<P->Pn|[mon1[j]*MonomialCoefficient(u,Exponents(mon1[j])):j in [1..#mon1]]>;
+ forms2 := [Evaluate(g,DefiningEquations(ver)) : g in forms];
+ forms := [Factorization(g)[1][1]: g in forms2];
+ end if;
  return [p: p in forms];
 end function;
-
 
 
 // IdentifyTensor
