@@ -321,7 +321,8 @@ IdentifyTensor := function(n,d,v,h,Q)
   end for;
  end if;
  if d eq [1,1,1] then
-  if not IsIdentifiable(n,d,[1,0,0],v,h,Q) or not IsIdentifiable(n,d,[0,1,0],v,h,Q) or not IsIdentifiable(n,d,[0,1,0],v,h,Q) then
+  if not IsIdentifiable(n,d,[1,0,0],v,h,Q) or not IsIdentifiable(n,d,[0,1,0],v,h,Q) or not 
+IsIdentifiable(n,d,[0,1,0],v,h,Q) then
    return false,[];
   end if;
   FirstForms := [Evaluate(p,[x[j]: j in [1..n[1]+1]]) : p in IdentifyForms(n,d,[1,0,0],v,h,Q)];
@@ -590,7 +591,8 @@ Septic := function(F)
  P14 := ProjectiveSpace(Q,14);
  P4 := ProjectiveSpace(Q,4);
  mon3 := MonomialsOfDegree(R,3);
- H:=Span({P14![MonomialCoefficient(l,p): p in Monomials((&+[P2.j: j in [1..3]])^4)] : l in [R!Hder (F,Exponents(p)): p in mon3]});
+ H:=Span({P14![MonomialCoefficient(l,p): p in Monomials((&+[P2.j: j in [1..3]])^4)] : l in [R!Hder (F,Exponents(p)): p 
+in mon3]});
  f := map<P2->P14 | Terms((&+[P2.j: j in [1..3]])^4)>;
  pi := map<P14->P4 | MinimalBasis(H)>;
  fpi := map<P2->P4 | DefiningEquations(f*pi)>;
@@ -610,3 +612,33 @@ Septic := function(F)
  return lis,[-ll[c] : c in [2..#ll]];
 end function;
 
+// Nonic
+// INPUT: a plane nonic of rank 17 and a field Q
+// OUTPUT: the components of the nonic
+
+Nonic := function(F)
+ R := Parent(F);
+ Q := BaseRing(R);
+ P2 := Proj(R);
+ P20 := ProjectiveSpace(Q,20);
+ P5 := ProjectiveSpace(Q,5);
+ mon4 := MonomialsOfDegree(R,4);
+ H:=Span({P20![MonomialCoefficient(l,p): p in Monomials((&+[P2.j: j in [1..3]])^5)] : l in [R!Hder (F,Exponents(p)): p in mon4]});
+ f := map<P2->P20 | Terms((&+[P2.j: j in [1..3]])^5)>;
+ pi := map<P20->P5 | MinimalBasis(H)>;
+ fpi := map<P2->P5 | DefiningEquations(f*pi)>;
+ VP:= fpi(P2);
+ W := Scheme(P5,[p: p in Basis(Ideal(VP))| Degree(p) le 16]);
+ X := Scheme(P5,Saturation(Ideal(W),Ideal(VP)));
+ L := IrreducibleComponents(X);
+ for j in [1..#L] do
+  Z:=Fiber(fpi,L[j]);
+  auxpts := Points(Z);
+  if #auxpts eq 17 then
+   pts:=auxpts;
+  end if;
+ end for;
+ lis := Sort([&+[P2.i*p[i] : i in [1..3]] : p in pts]);
+ ll := Eltseq(LinRelPols([F] cat [f^9 : f in lis])[1]);
+ return lis,[-ll[c] : c in [2..#ll]];
+end function;
